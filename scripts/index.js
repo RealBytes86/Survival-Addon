@@ -38,7 +38,7 @@ function clock() {
 
     for(let i = 0; i < players.length; i++) { 
         const player = players[i];
-        player.onScreenDisplay.setActionBar(
+        player.onScreenDisplay.setTitle(
             new TextBuilder()
             .setText(`Real Time: ${clock.hours}:${clock.minutes}:${clock.seconds}`)
             .setText(`World Time: ${minecraftTicksToRealTime(worldTime)}`)
@@ -62,6 +62,8 @@ function startEvents() {
             }
         }
     })
+
+
 
     world.afterEvents.playerDimensionChange.subscribe((dimension) => {
         world.sendMessage(
