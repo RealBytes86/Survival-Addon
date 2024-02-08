@@ -42,6 +42,7 @@ function clock() {
         player.onScreenDisplay.setActionBar(
             new TextBuilder()
             .setText(`Real Time: ${clock.hours}:${clock.minutes}:${clock.seconds}`)
+            .setText(`Online: ${world.getAllPlayers().length}`)
             .setText(`World Time: ${minecraftTicksToRealTime(worldTime)}`)
             .setText(`World Day: ${day}`)
             .setText(`Player: ${player.getDynamicProperty(config.dynamic.player_kill) ?? 0}`)
