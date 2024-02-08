@@ -1,11 +1,13 @@
-import { Dimension, world } from "@minecraft/server";
+import { world } from "@minecraft/server";
 import { Thread } from "./Utils/Threads";
 import { TimeDate } from "./Utils/TimeDate";
 import { TextBuilder } from "./Utils/RawBuilder";
 
 const config = {
     dynamic: {
-        death: "death"
+        death: "death",
+        player_kill: "player_kill",
+        player_kill_entity: "player_kill_entity",
     }
 }
 
@@ -28,7 +30,6 @@ function minecraftTicksToRealTime(ticks) {
     return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 }
 
-
 function clock() {
     const time = new TimeDate();
     const clock = time.clock("berlin");
@@ -38,11 +39,13 @@ function clock() {
 
     for(let i = 0; i < players.length; i++) { 
         const player = players[i];
-        player.onScreenDisplay.setTitle(
+        player.onScreenDisplay.setActionBar(
             new TextBuilder()
             .setText(`Real Time: ${clock.hours}:${clock.minutes}:${clock.seconds}`)
             .setText(`World Time: ${minecraftTicksToRealTime(worldTime)}`)
             .setText(`World Day: ${day}`)
+            .setText(`Player: ${player.getDynamicProperty(config.dynamic.player_kill) ?? 0}`)
+            .setText(`Entity: ${player.getDynamicProperty(config.dynamic.player_kill_entity) ?? 0} `)
             .setText(`Death: ${player.getDynamicProperty(config.dynamic.death) ?? 0}`)
             .getText()
         )
@@ -54,16 +57,24 @@ function startEvents() {
     world.afterEvents.entityDie.subscribe((entity) => {
         if(entity.deadEntity.typeId == "minecraft:player") {
             const player = entity.deadEntity;
-            const death = player.getDynamicProperty(config.dynamic.death);
-            if(death == undefined) {
-                player.setDynamicProperty(config.dynamic.death, 1);
+            const death = player.getDynamicProperty(config.dynamic.death) ?? 0;
+            player.setDynamicProperty(config.dynamic.death, death + 1);
+        }
+
+        if(entity.damageSource.damagingEntity.typeId == "minecraft:player") { 
+            if(entity.deadEntity.typeId == "minecraft:player") { 
+                const player = entity.damageSource.damagingEntity;
+                const kills = player.getDynamicProperty(config.dynamic.player_kill) ?? 0;
+                player.setDynamicProperty(config.dynamic.player_kill, kills + 1);
+                return;
             } else {
-                player.setDynamicProperty(config.dynamic.death, death + 1);
+                const player = entity.damageSource.damagingEntity;
+                const kills = player.getDynamicProperty(config.dynamic.player_kill_entity) ?? 0;
+                player.setDynamicProperty(config.dynamic.player_kill_entity, kills + 1);
+                return;
             }
         }
     })
-
-
 
     world.afterEvents.playerDimensionChange.subscribe((dimension) => {
         world.sendMessage(
