@@ -27,7 +27,7 @@ function minecraftTicksToRealTime(ticks) {
     let formattedMinutes = minutes.toString().padStart(2, '0');
     let formattedSeconds = seconds.toString().padStart(2, '0');
 
-    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+    return `${formattedHours}:${formattedMinutes}`;
 }
 
 function clock() {
@@ -39,12 +39,20 @@ function clock() {
 
     for(let i = 0; i < players.length; i++) { 
         const player = players[i];
-        player.onScreenDisplay.setActionBar(
+        player.onScreenDisplay.setTitle(
             new TextBuilder()
-            .setText(`Real Time: ${clock.hours}:${clock.minutes}:${clock.seconds}`)
+            .setText("Survival")
+            .setText("")
+            .setText(`Name: ${player.name}`)
+            .setText(`Mcid: ${player.id}`)
+            .setText(`Time: ${clock.hours}:${clock.minutes}`)
+            .setText("")
+            .setText("World ")
             .setText(`Online: ${world.getAllPlayers().length}`)
-            .setText(`World Time: ${minecraftTicksToRealTime(worldTime)}`)
-            .setText(`World Day: ${day}`)
+            .setText(`Time: ${minecraftTicksToRealTime(worldTime)}`)
+            .setText(`Day: ${day}`)
+            .setText("")
+            .setText("Kills & Death")
             .setText(`Player: ${player.getDynamicProperty(config.dynamic.player_kill) ?? 0}`)
             .setText(`Entity: ${player.getDynamicProperty(config.dynamic.player_kill_entity) ?? 0} `)
             .setText(`Death: ${player.getDynamicProperty(config.dynamic.death) ?? 0}`)
@@ -86,7 +94,7 @@ function startEvents() {
     })
 }
 
-const ThreadOne = new Thread(clock, 0);
+const ThreadOne = new Thread(clock, 0.25);
 
 world.afterEvents.worldInitialize.subscribe(() => {
     startEvents();
